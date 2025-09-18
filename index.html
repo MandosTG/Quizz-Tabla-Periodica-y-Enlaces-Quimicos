@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario: Tabla Periódica y Enlaces Químicos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .question-card {
+            transition: all 0.3s ease;
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        
+        .question-card.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .option-button {
+            transition: all 0.2s ease;
+        }
+        
+        .option-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .correct {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .incorrect {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        
+        .celebration {
+            animation: bounce 0.6s ease-in-out;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        .molecule {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="molecule inline-block text-6xl mb-4">⚛️</div>
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Cuestionario de Química</h1>
+            <p class="text-xl text-gray-600">Tabla Periódica y Enlaces Químicos</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="bg-white rounded-full p-1 mb-8 shadow-lg">
+            <div class="bg-gray-200 rounded-full h-4 relative overflow-hidden">
+                <div id="progressBar" class="progress-bar bg-gradient-to-r from-blue-500 to-purple-600 h-full rounded-full" style="width: 0%"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span id="progressText" class="text-sm font-semibold text-gray-700">0/10</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quizContainer" class="space-y-8">
+            <!-- Questions will be inserted here -->
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="hidden bg-white rounded-2xl shadow-xl p-8 text-center">
+            <div class="text-6xl mb-4">🎉</div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">¡Quiz Completado!</h2>
+            <div id="finalScore" class="text-2xl font-semibold mb-6"></div>
+            <div id="scoreMessage" class="text-lg text-gray-600 mb-8"></div>
+            <button onclick="restartQuiz()" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105">
+                Reintentar Quiz
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                id: 1,
+                question: "Las filas horizontales de la tabla periódica se llaman períodos. ¿Qué indica el número del período en el que se encuentra un elemento?",
+                options: [
+                    "La cantidad de electrones de valencia.",
+                    "El nivel de energía principal de sus electrones más externos.",
+                    "Que sus propiedades químicas son similares a las de otros en la misma fila."
+                ],
+                correct: 1,
+                explanation: "La respuesta correcta es la B. El número de período corresponde al nivel de energía principal (n) que ocupan los electrones de valencia. Por ejemplo, los elementos del Período 3 tienen sus electrones más externos en el nivel de energía n=3. La cantidad de electrones de valencia la indica el grupo (opción A), y las propiedades similares las comparten los elementos de un mismo grupo, no período (opción C)."
+            },
+            {
+                id: 2,
+                question: "Los elementos que pertenecen a la misma columna vertical (grupo) comparten una característica fundamental. ¿Cuál es?",
+                options: [
+                    "Tienen la misma cantidad de niveles de energía.",
+                    "Tienen la misma configuración de electrones de valencia.",
+                    "Tienen la misma masa atómica."
+                ],
+                correct: 1,
+                explanation: "La respuesta correcta es la B. Los elementos de un mismo grupo tienen el mismo número de electrones en su capa más externa (valencia), lo que les confiere propiedades químicas muy similares. Por ejemplo, todos los elementos del Grupo 1 tienen 1 electrón de valencia y son metales muy reactivos."
+            },
+            {
+                id: 3,
+                question: "¿Cuántos electrones de valencia tiene el Fósforo (P), que se encuentra en el Grupo 15?",
+                options: [
+                    "15 electrones.",
+                    "3 electrones.",
+                    "5 electrones."
+                ],
+                correct: 2,
+                explanation: "La respuesta correcta es la C. Para los elementos de los grupos principales 13 al 18, el número de electrones de valencia se obtiene restando 10 al número del grupo (15 - 10 = 5). Por lo tanto, el Fósforo tiene 5 electrones de valencia, que son los que utiliza para formar enlaces."
+            },
+            {
+                id: 4,
+                question: "¿Qué tipo de enlace se forma cuando un átomo metálico transfiere uno o más electrones a un átomo no metálico?",
+                options: [
+                    "Enlace iónico.",
+                    "Enlace covalente.",
+                    "Enlace metálico."
+                ],
+                correct: 0,
+                explanation: "La respuesta correcta es la A. El enlace iónico se basa en la transferencia de electrones. El metal pierde electrones y forma un ion positivo (catión), mientras que el no metal los gana y forma un ion negativo (anión). La atracción electrostática entre estas cargas opuestas es lo que forma el enlace."
+            },
+            {
+                id: 5,
+                question: "¿Qué sucede con los electrones en un enlace covalente?",
+                options: [
+                    "Se transfieren de un átomo a otro.",
+                    "Se comparten entre dos átomos.",
+                    "Se mueven libremente en una \"nube\" alrededor de muchos átomos."
+                ],
+                correct: 1,
+                explanation: "La respuesta correcta es la B. El enlace covalente, típico entre elementos no metálicos, se caracteriza porque los átomos comparten pares de electrones para alcanzar una configuración más estable, generalmente cumpliendo la regla del octeto. La transferencia es iónica (A) y la nube de electrones es metálica (C)."
+            },
+            {
+                id: 6,
+                question: "Cuando un átomo de Calcio (Ca), un metal del Grupo 2, forma un ion, ¿qué es más probable que suceda?",
+                options: [
+                    "Gana 2 electrones para formar un ion con carga -2.",
+                    "Pierde 2 electrones para formar un ion con carga +2.",
+                    "Pierde 1 electrón para formar un ion con carga +1."
+                ],
+                correct: 1,
+                explanation: "La respuesta correcta es la B. Como metal del Grupo 2, el Calcio tiene 2 electrones de valencia. Para alcanzar la estabilidad, le es mucho más fácil perder esos 2 electrones que ganar 6. Al perder dos partículas negativas, el átomo queda con una carga neta de +2, convirtiéndose en el catión Ca²⁺."
+            },
+            {
+                id: 7,
+                question: "La molécula de agua (H₂O) está formada por dos átomos de Hidrógeno y uno de Oxígeno. Sabiendo que el Oxígeno es mucho más electronegativo que el Hidrógeno, los electrones del enlace se comparten de manera desigual. ¿Cómo se llama este tipo de enlace?",
+                options: [
+                    "Enlace covalente polar.",
+                    "Enlace covalente no polar.",
+                    "Enlace iónico."
+                ],
+                correct: 0,
+                explanation: "La respuesta correcta es la A. Cuando hay una diferencia significativa de electronegatividad entre dos átomos que comparten electrones, se forma un enlace covalente polar. El átomo más electronegativo (Oxígeno) atrae con más fuerza a los electrones, generando una carga parcial negativa sobre él y cargas parciales positivas sobre los átomos de Hidrógeno."
+            },
+            {
+                id: 8,
+                question: "¿Cuál de los siguientes elementos es un gas noble y, por lo tanto, muy poco reactivo?",
+                options: [
+                    "Cloro (Cl).",
+                    "Sodio (Na).",
+                    "Argón (Ar)."
+                ],
+                correct: 2,
+                explanation: "La respuesta correcta es la C. El Argón (Ar) se encuentra en el Grupo 18, el de los gases nobles. Estos elementos tienen su capa de valencia completa (8 electrones), lo que los hace extremadamente estables y muy poco propensos a reaccionar. El Cloro (A) es un halógeno muy reactivo y el Sodio (B) es un metal alcalino también muy reactivo."
+            },
+            {
+                id: 9,
+                question: "La \"Regla del Octeto\" es un concepto fundamental en la formación de enlaces. ¿Qué postula esta regla?",
+                options: [
+                    "Que los átomos siempre deben tener 8 protones.",
+                    "Que los átomos tienden a completar 8 electrones en su capa de valencia.",
+                    "Que los átomos solo pueden formar enlaces con otros 8 elementos."
+                ],
+                correct: 1,
+                explanation: "La respuesta correcta es la B. La Regla del Octeto establece que los átomos de los elementos representativos tienden a formar enlaces (ganando, perdiendo o compartiendo electrones) hasta estar rodeados por ocho electrones de valencia, alcanzando una configuración electrónica similar a la de un gas noble, lo que les da gran estabilidad."
+            },
+            {
+                id: 10,
+                question: "¿Qué tipo de enlace esperarías que se forme entre dos átomos de Bromo (Br)?",
+                options: [
+                    "Iónico, porque el Bromo es muy electronegativo.",
+                    "Covalente no polar, porque son átomos idénticos.",
+                    "Metálico, porque el Bromo es un líquido."
+                ],
+                correct: 1,
+                explanation: "La respuesta correcta es la B. Cuando dos átomos idénticos se enlazan, su electronegatividad es exactamente la misma. Por lo tanto, comparten el par de electrones de manera perfectamente equitativa, sin que ninguno de los dos los atraiga más que el otro. Esto resulta en un enlace covalente no polar."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        function initQuiz() {
+            renderQuestion();
+            updateProgress();
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('quizContainer');
+            const question = questions[currentQuestion];
+            
+            container.innerHTML = `
+                <div class="question-card bg-white rounded-2xl shadow-xl p-8">
+                    <div class="flex items-center mb-6">
+                        <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold mr-4">
+                            ${currentQuestion + 1}
+                        </div>
+                        <h2 class="text-2xl font-semibold text-gray-800">Pregunta ${currentQuestion + 1}</h2>
+                    </div>
+                    
+                    <p class="text-lg text-gray-700 mb-8 leading-relaxed">${question.question}</p>
+                    
+                    <div class="space-y-4 mb-8">
+                        ${question.options.map((option, index) => `
+                            <button onclick="selectAnswer(${index})" 
+                                    class="option-button w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 font-medium text-gray-700"
+                                    id="option-${index}">
+                                <span class="inline-block w-8 h-8 rounded-full bg-gray-100 text-center leading-8 mr-4 font-semibold">
+                                    ${String.fromCharCode(65 + index)}
+                                </span>
+                                ${option}
+                            </button>
+                        `).join('')}
+                    </div>
+                    
+                    <div id="explanation" class="hidden bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-xl">
+                        <h4 class="font-semibold text-blue-800 mb-2">📚 Explicación:</h4>
+                        <p class="text-blue-700 leading-relaxed">${question.explanation}</p>
+                    </div>
+                    
+                    <div id="nextButton" class="hidden text-center mt-8">
+                        <button onclick="nextQuestion()" 
+                                class="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-3 rounded-xl font-semibold hover:from-green-600 hover:to-blue-600 transition-all duration-200 transform hover:scale-105">
+                            ${currentQuestion === questions.length - 1 ? 'Ver Resultados' : 'Siguiente Pregunta'} →
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Animate question appearance
+            setTimeout(() => {
+                document.querySelector('.question-card').classList.add('active');
+            }, 100);
+            
+            answered = false;
+        }
+
+        function selectAnswer(selectedIndex) {
+            if (answered) return;
+            
+            answered = true;
+            const question = questions[currentQuestion];
+            const isCorrect = selectedIndex === question.correct;
+            
+            if (isCorrect) {
+                score++;
+            }
+            
+            // Update all option buttons
+            question.options.forEach((_, index) => {
+                const button = document.getElementById(`option-${index}`);
+                button.style.pointerEvents = 'none';
+                
+                if (index === question.correct) {
+                    button.classList.add('correct');
+                    button.innerHTML = `
+                        <span class="inline-block w-8 h-8 rounded-full bg-white bg-opacity-20 text-center leading-8 mr-4 font-semibold">
+                            ✓
+                        </span>
+                        ${question.options[index]}
+                    `;
+                } else if (index === selectedIndex && !isCorrect) {
+                    button.classList.add('incorrect');
+                    button.innerHTML = `
+                        <span class="inline-block w-8 h-8 rounded-full bg-white bg-opacity-20 text-center leading-8 mr-4 font-semibold">
+                            ✗
+                        </span>
+                        ${question.options[index]}
+                    `;
+                }
+            });
+            
+            // Show explanation and next button
+            document.getElementById('explanation').classList.remove('hidden');
+            document.getElementById('nextButton').classList.remove('hidden');
+            
+            updateProgress();
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            
+            if (currentQuestion < questions.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + (answered ? 1 : 0)) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${currentQuestion + (answered ? 1 : 0)}/${questions.length}`;
+        }
+
+        function showResults() {
+            document.getElementById('quizContainer').classList.add('hidden');
+            document.getElementById('resultsSection').classList.remove('hidden');
+            
+            const percentage = Math.round((score / questions.length) * 100);
+            document.getElementById('finalScore').textContent = `${score}/${questions.length} (${percentage}%)`;
+            
+            let message = '';
+            let emoji = '';
+            
+            if (percentage >= 90) {
+                message = '¡Excelente! Dominas muy bien los conceptos de química.';
+                emoji = '🏆';
+            } else if (percentage >= 70) {
+                message = '¡Muy bien! Tienes un buen entendimiento del tema.';
+                emoji = '🎯';
+            } else if (percentage >= 50) {
+                message = 'Bien hecho. Hay algunos conceptos que puedes repasar.';
+                emoji = '📚';
+            } else {
+                message = 'Te recomiendo estudiar más estos temas. ¡No te rindas!';
+                emoji = '💪';
+            }
+            
+            document.getElementById('scoreMessage').innerHTML = `${emoji} ${message}`;
+            document.getElementById('resultsSection').classList.add('celebration');
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            answered = false;
+            
+            document.getElementById('quizContainer').classList.remove('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('resultsSection').classList.remove('celebration');
+            
+            initQuiz();
+        }
+
+        // Initialize quiz when page loads
+        initQuiz();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98146c1a004df0ba',t:'MTc1ODIzNjAzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
